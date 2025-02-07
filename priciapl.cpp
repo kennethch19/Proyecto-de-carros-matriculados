@@ -2,6 +2,7 @@
 #include<windows.h>
 #include <conio.h>
 #include <stdio.h>
+#include <codecvt>
 using namespace std;
 
 void gotoxy(int x, int y) {
@@ -18,6 +19,8 @@ void setColor(int color) {
 
 
 int main(){
+    SetConsoleOutputCP(CP_UTF8);
+    std::wcout.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
 
     system("cls");
     setColor(4);
@@ -26,7 +29,7 @@ int main(){
     gotoxy(0, 2); cout << "REGISTRO DE CARROS MATRICULADOS";
     setColor(3);
     gotoxy(0, 4); cout << "Integrantes:DYLAN FERNANDO LAYEDRA JACOME.KENNETH MIJAEL CHICAIZA MIÑO";
-    gotoxy(0, 6); cout << "NRC:4598";
+    gotoxy(0, 6); cout << "NRC:4598"<<endl;
     setColor(5);
     system("pause");
 
