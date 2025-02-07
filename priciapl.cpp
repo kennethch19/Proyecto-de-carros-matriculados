@@ -1,7 +1,7 @@
 #include<iostream>
 #include<windows.h>
 #include <conio.h>
-
+#include <stdio.h>
 using namespace std;
 
 void gotoxy(int x, int y) {
