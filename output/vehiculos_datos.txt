@@ -1,0 +1,3 @@
+Placa          Propietario         Modelo              Color          Cedula         
+----------------------------------------------------------------------------------------
+123d           kenneth             toyota              negro          1753725470     
