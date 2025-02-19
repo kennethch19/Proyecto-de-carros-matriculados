@@ -145,18 +145,30 @@ void ingresarCedula(const string &msj, string &valor) {
     }
 }
 
+void gotoxy(int x, int y);
+void frame();
+
 void registrarVehiculo() {
     Vehiculo v;
-    ingresarCedula("Ingrese la cedula del propietario: ", v.cedula);
-    ingresarPlaca("Ingrese la placa del vehiculo: ", v.placa); // Cambiar el mensaje
-    ingresarTexto("Ingrese el propietario: ", v.propietario, esSoloLetras);
-    ingresarTexto("Ingrese el modelo: ", v.modelo, esSoloLetras);
-    ingresarTexto("Ingrese el color: ", v.color, esSoloLetras);
+    system("cls");
+    frame();
+    gotoxy(5, 5); std::cout << "Ingrese los datos del vehiculo:";
+    gotoxy(5, 7); std::cout << "Cedula: ";
+    ingresarCedula("", v.cedula);
+    gotoxy(5, 9); std::cout << "Placa: ";
+    ingresarPlaca("", v.placa);
+    gotoxy(5, 11); std::cout << "Propietario: ";
+    ingresarTexto("", v.propietario, esSoloLetras);
+    gotoxy(5, 13); std::cout << "Modelo: ";
+    ingresarTexto("", v.modelo, esSoloLetras);
+    gotoxy(5, 15); std::cout << "Color: ";
+    ingresarTexto("", v.color, esSoloLetras);
     vehiculos.push_back(v);
     guardarRegistros();
-    guardarDatos(vehiculos); // Guardar datos en el archivo de texto
+    guardarDatos(vehiculos);
     cout << "Registro guardado correctamente.\n";
 }
+
 
 void actualizarVehiculo() {
     string placa;
