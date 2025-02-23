@@ -30,7 +30,7 @@ void cargarRegistros() {
     getline(archivo, header); // Leer la primera línea (encabezado)
     getline(archivo, header); // Leer la segunda línea (separador)
     Vehiculo v;
-    while (archivo >> v.placa >> v.propietario >> v.modelo >> v.color >> v.cedula) {
+    while (archivo >> v.placa >> ws && getline(archivo, v.propietario, '\t') && archivo >> v.modelo >> v.color >> v.cedula) {
         vehiculos.push_back(v);
     }
     archivo.close();
@@ -109,20 +109,42 @@ void ingresarTexto(const string &msj, string &valor, bool (*validacion)(const st
     }
 }
 
+bool esPlacaValida(const string& placa) {
+    if (placa.length() != 7) return false;
+    for (int i = 0; i < 3; i++) {
+        if (!isupper(placa[i])) return false;
+    }
+    for (int i = 3; i < 7; i++) {
+        if (!isdigit(placa[i])) return false;
+    }
+    return true;
+}
+
 void ingresarPlaca(const string &msj, string &valor) {
     char c;
     cout << msj;
     valor.clear();
-    while ((c = _getch()) != 13) {
-        if (isalnum(c)) { // Permitir cualquier carácter alfanumérico
-            cout << c;
-            valor.push_back(c);
-        } else if (c == 8 && !valor.empty()) { 
+    while (true) {
+        c = _getch();
+        if (c == 13 && esPlacaValida(valor)) { // Enter key and valid plate
+            break;
+        } else if (c == 8 && !valor.empty()) { // Backspace key
             cout << "\b \b";
             valor.pop_back();
+        } else if ((valor.size() < 3 && isupper(c)) || (valor.size() >= 3 && valor.size() < 7 && isdigit(c))) {
+            cout << c;
+            valor.push_back(c);
+        } else if (valor.size() < 3 && islower(c)) { // Convert lowercase to uppercase
+            c = toupper(c);
+            cout << c;
+            valor.push_back(c);
         }
     }
     cout << endl;
+    if (!esPlacaValida(valor)) {
+        cout << "Placa invalida. Intente nuevamente." << endl;
+        ingresarPlaca(msj, valor);
+    }
 }
 
 void ingresarCedula(const string &msj, string &valor) {
@@ -152,16 +174,17 @@ void registrarVehiculo() {
     Vehiculo v;
     system("cls");
     frame();
-    gotoxy(5, 5); std::cout << "Ingrese los datos del vehiculo:";
+    gotoxy(5, 5); std::cout << "Ingrese los datos del propietario:";
     gotoxy(5, 7); std::cout << "Cedula: ";
     ingresarCedula("", v.cedula);
-    gotoxy(5, 9); std::cout << "Placa: ";
-    ingresarPlaca("", v.placa);
-    gotoxy(5, 11); std::cout << "Propietario: ";
+    gotoxy(5, 9); std::cout << "Nombre y Apellido: ";
     ingresarTexto("", v.propietario, esSoloLetras);
-    gotoxy(5, 13); std::cout << "Modelo: ";
+    gotoxy(5, 11); std::cout << "Ingrese los datos del vehiculo:";
+    gotoxy(5, 13); std::cout << "Placa: ";
+    ingresarPlaca("", v.placa);
+    gotoxy(5, 15); std::cout << "Modelo: ";
     ingresarTexto("", v.modelo, esSoloLetras);
-    gotoxy(5, 15); std::cout << "Color: ";
+    gotoxy(5, 17); std::cout << "Color: ";
     ingresarTexto("", v.color, esSoloLetras);
     vehiculos.push_back(v);
     guardarRegistros();
@@ -169,16 +192,15 @@ void registrarVehiculo() {
     cout << "Registro guardado correctamente.\n";
 }
 
-
 void actualizarVehiculo() {
     string placa;
-    ingresarPlaca("Ingrese la placa del vehiculo a actualizar: ", placa); // Cambiar el mensaje
+    ingresarPlaca("Ingrese la placa del vehiculo a actualizar: ", placa);
     for (auto& v : vehiculos) {
         if (v.placa == placa) {
+            cout << "Modelo actual: " << v.modelo << endl;
+            cout << "Color actual: " << v.color << endl;
             ingresarCedula("Ingrese la nueva cedula del propietario: ", v.cedula);
             ingresarTexto("Ingrese el nuevo propietario: ", v.propietario, esSoloLetras);
-            ingresarTexto("Ingrese el nuevo modelo: ", v.modelo, esSoloLetras);
-            ingresarTexto("Ingrese el nuevo color: ", v.color, esSoloLetras);
             guardarRegistros();
             guardarDatos(vehiculos); // Guardar datos en el archivo de texto
             cout << "Registro actualizado correctamente.\n";
@@ -189,15 +211,16 @@ void actualizarVehiculo() {
 }
 
 void verRegistros() {
-    if (vehiculos.empty()) {
-        cout << "No hay registros disponibles.\n";
+    ifstream archivo(FILE_PATH);
+    if (!archivo) {
+        cout << "No se pudo abrir el archivo de registros.\n";
         return;
     }
-    cout << left << setw(15) << "Placa" << setw(20) << "Propietario" << setw(20) << "Modelo" << setw(15) << "Color" << setw(15) << "Cedula" << endl;
-    cout << "----------------------------------------------------------------------------------------" << endl;
-    for (const auto& v : vehiculos) {
-        cout << left << setw(15) << v.placa << setw(20) << v.propietario << setw(20) << v.modelo << setw(15) << v.color << setw(15) << v.cedula << endl;
+    string linea;
+    while (getline(archivo, linea)) {
+        cout << linea << endl;
     }
+    archivo.close();
 }
 
 void eliminarVehiculo() {
@@ -213,6 +236,13 @@ void eliminarVehiculo() {
         }
     }
     cout << "No se encontro un vehiculo con esa placa.\n";
+}
+
+void eliminarTodosLosVehiculos() {
+    vehiculos.clear();
+    guardarRegistros();
+    guardarDatos(vehiculos);
+    cout << "Todos los registros han sido eliminados correctamente.\n";
 }
 
 void gotoxy(int x, int y) {
@@ -275,8 +305,9 @@ void mostrarFunciones() {
     gotoxy(5, 8); std::cout << "2. Actualizar vehiculo";
     gotoxy(5, 9); std::cout << "3. Ver registros";
     gotoxy(5, 10); std::cout << "4. Eliminar vehiculo";
+    gotoxy(5, 11); std::cout << "5. Eliminar todos los vehiculos"; // Nueva opción
     setColor(12); // Cambiar el color a rojo
-    gotoxy(5, 11); std::cout << "5. Salir";
+    gotoxy(5, 12); std::cout << "6. Salir";
     setColor(7); 
 }
 
@@ -296,7 +327,7 @@ void mostrarMenu() {
                     if (opcion > 1) opcion--;
                     break;
                 case 80: 
-                    if (opcion < 5) opcion++;
+                    if (opcion < 6) opcion++;
                     break;
                 case 13: 
                     enterPressed = true;
@@ -320,13 +351,16 @@ void mostrarMenu() {
                 eliminarVehiculo();
                 break;
             case 5:
+                eliminarTodosLosVehiculos();
+                break;
+            case 6:
                 cout << "Saliendo...\n";
                 break;
         }
-        if (opcion != 5) {
+        if (opcion != 6) {
             system("pause"); 
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
 }
 
 int main() {
