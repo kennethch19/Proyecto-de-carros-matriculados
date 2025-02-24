@@ -192,6 +192,26 @@ void registrarVehiculo() {
     cout << "Registro guardado correctamente.\n";
 }
 
+void registrarVehiculoCliente(const string& nombre, const string& cedula) {
+    Vehiculo v;
+    v.propietario = nombre;
+    v.cedula = cedula;
+    system("cls");
+    frame();
+    gotoxy(5, 5); std::cout << "Ingrese los datos del vehiculo:";
+    gotoxy(5, 7); std::cout << "Propietario: " << v.propietario;
+    gotoxy(5, 9); std::cout << "Cedula: " << v.cedula;
+    gotoxy(5, 11); std::cout << "Placa: ";
+    ingresarPlaca("", v.placa);
+    gotoxy(5, 13); std::cout << "Modelo: ";
+    ingresarTexto("", v.modelo, esSoloLetras);
+    gotoxy(5, 15); std::cout << "Color: ";
+    ingresarTexto("", v.color, esSoloLetras);
+    vehiculos.push_back(v);
+    guardarRegistros();
+    cout << "Registro guardado correctamente.\n";
+}
+
 void actualizarVehiculo() {
     string placa;
     ingresarPlaca("Ingrese la placa del vehiculo a actualizar: ", placa);
@@ -296,28 +316,63 @@ void frame() {
     setColor(7); 
 }
 
-void mostrarFunciones() {
+void mostrarFuncionesAdmin() {
     frame();
     setColor(10); // Cambiar el color a verde
-    gotoxy(15, 1); std::cout << "Menu de Vehiculos";
+    gotoxy(15, 1); std::cout << "Menu de Vehiculos (Admin)";
     setColor(14); // Cambiar el color a amarillo
     gotoxy(5, 7); std::cout << "1. Registrar vehiculo";
     gotoxy(5, 8); std::cout << "2. Actualizar vehiculo";
     gotoxy(5, 9); std::cout << "3. Ver registros";
     gotoxy(5, 10); std::cout << "4. Eliminar vehiculo";
-    gotoxy(5, 11); std::cout << "5. Eliminar todos los vehiculos"; // Nueva opción
+    gotoxy(5, 11); std::cout << "5. Eliminar todos los vehiculos";
     setColor(12); // Cambiar el color a rojo
     gotoxy(5, 12); std::cout << "6. Salir";
     setColor(7); 
 }
 
-void mostrarMenu() {
+void verMisVehiculos(const string& cedula) {
+    ifstream archivo(FILE_PATH);
+    if (!archivo) {
+        cout << "No se pudo abrir el archivo de registros.\n";
+        return;
+    }
+    string linea;
+    bool encontrado = false;
+    cout << left << setw(15) << "Placa" << setw(20) << "Propietario" << setw(20) << "Modelo" << setw(15) << "Color" << setw(15) << "Cedula" << endl;
+    cout << "----------------------------------------------------------------------------------------" << endl;
+    while (getline(archivo, linea)) {
+        if (linea.find(cedula) != string::npos) {
+            cout << linea << endl;
+            encontrado = true;
+        }
+    }
+    if (!encontrado) {
+        cout << "No se encontraron vehiculos registrados con su cedula.\n";
+    }
+    archivo.close();
+}
+
+void mostrarFuncionesCliente() { 
+    frame();
+    setColor(10); // Cambiar el color a verde
+    gotoxy(15, 1); std::cout << "Menu de Vehiculos (Cliente)";
+    setColor(14); // Cambiar el color a amarillo
+    gotoxy(5, 7); std::cout << "1. Registrar vehiculo";
+    gotoxy(5, 8); std::cout << "2. Actualizar vehiculo";
+    gotoxy(5, 9); std::cout << "3. Ver mis vehiculos";
+    setColor(12); // Cambiar el color a rojo
+    gotoxy(5, 10); std::cout << "4. Salir";
+    setColor(7); 
+}
+
+void mostrarMenuAdmin() {
     int opcion = 1;
     char tecla;
     bool enterPressed = false;
     do {
         system("cls"); 
-        mostrarFunciones();
+        mostrarFuncionesAdmin();
         gotoxy(3, 6 + opcion); std::cout << "->";
         do {
             tecla = _getch();
@@ -363,8 +418,123 @@ void mostrarMenu() {
     } while (opcion != 6);
 }
 
+void mostrarMenuCliente(const string& nombre, const string& cedula) {
+    int opcion = 1;
+    char tecla;
+    bool enterPressed = false;
+    do {
+        system("cls"); 
+        mostrarFuncionesCliente();
+        gotoxy(3, 6 + opcion); std::cout << "->";
+        do {
+            tecla = _getch();
+            gotoxy(3, 6 + opcion); std::cout << "  "; 
+            switch (tecla) {
+                case 72: 
+                    if (opcion > 1) opcion--;
+                    break;
+                case 80: 
+                    if (opcion < 4) opcion++;
+                    break;
+                case 13: 
+                    enterPressed = true;
+                    break;
+            }
+            gotoxy(3, 6 + opcion); std::cout << "->"; 
+        } while (!enterPressed);
+        enterPressed = false;
+        system("cls"); 
+        switch (opcion) {
+            case 1:
+                registrarVehiculoCliente(nombre, cedula);
+                break;
+            case 2:
+                actualizarVehiculo();
+                break;
+            case 3:
+                verMisVehiculos(cedula);
+                break;
+            case 4:
+                cout << "Saliendo...\n";
+                break;
+        }
+        if (opcion != 4) {
+            system("pause"); 
+        }
+    } while (opcion != 4);
+}
+
+bool verificarContrasena() {
+    string contrasena;
+    cout << "Ingrese la contraseña de administrador: ";
+    char c;
+    while ((c = _getch()) != 13) { // 13 es el código ASCII para Enter
+        if (c == 8 && !contrasena.empty()) { // Backspace
+            cout << "\b \b";
+            contrasena.pop_back();
+        } else if (isalnum(c)) {
+            cout << '*';
+            contrasena.push_back(c);
+        }
+    }
+    cout << endl;
+    return contrasena == "1234";
+}
+
+void seleccionarUsuario() {
+    int opcion = 1;
+    char tecla;
+    bool enterPressed = false;
+    do {
+        system("cls");
+        cout << "Seleccione el tipo de usuario:\n";
+        cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador\n";
+        cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente\n";
+        do {
+            tecla = _getch();
+            switch (tecla) {
+                case 72: // Flecha arriba
+                    if (opcion > 1) opcion--;
+                    break;
+                case 80: // Flecha abajo
+                    if (opcion < 2) opcion++;
+                    break;
+                case 13: // Enter
+                    enterPressed = true;
+                    break;
+            }
+            system("cls");
+            cout << "Seleccione el tipo de usuario:\n";
+            cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador\n";
+            cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente\n";
+        } while (!enterPressed);
+        enterPressed = false;
+        if (opcion == 1) {
+            if (verificarContrasena()) {
+                mostrarMenuAdmin();
+            } else {
+                cout << "Contraseña incorrecta. Intente nuevamente.\n";
+                system("pause");
+            }
+        } else if (opcion == 2) {
+            string nombre, cedula;
+            cout << "Ingrese su nombre y apellido: ";
+            cin.ignore();
+            getline(cin, nombre);
+            cout << "Ingrese su cedula: ";
+            cin >> cedula;
+            if (esCedulaValida(cedula)) {
+                mostrarMenuCliente(nombre, cedula);
+            } else {
+                cout << "Cedula invalida. Intente nuevamente.\n";
+                system("pause");
+            }
+        }
+    } while (true);
+}
+
 int main() {
     cargarRegistros();
-    mostrarMenu();
+    seleccionarUsuario();
     return 0;
 }
