@@ -209,18 +209,22 @@ void registrarVehiculoCliente(const string& nombre, const string& cedula) {
     ingresarTexto("", v.color, esSoloLetras);
     vehiculos.push_back(v);
     guardarRegistros();
+    guardarDatos(vehiculos); // Guardar datos en el archivo de texto
     cout << "Registro guardado correctamente.\n";
 }
 
 void actualizarVehiculo() {
     string placa;
-    ingresarPlaca("Ingrese la placa del vehiculo a actualizar: ", placa);
+    cout << "Ingrese la placa del vehiculo a actualizar: ";
+    cin >> placa;
     for (auto& v : vehiculos) {
         if (v.placa == placa) {
             cout << "Modelo actual: " << v.modelo << endl;
             cout << "Color actual: " << v.color << endl;
             ingresarCedula("Ingrese la nueva cedula del propietario: ", v.cedula);
             ingresarTexto("Ingrese el nuevo propietario: ", v.propietario, esSoloLetras);
+
+            ingresarTexto("Ingrese el nuevo color: ", v.color, esSoloLetras);
             guardarRegistros();
             guardarDatos(vehiculos); // Guardar datos en el archivo de texto
             cout << "Registro actualizado correctamente.\n";
