@@ -570,10 +570,9 @@ void seleccionarUsuario() {
             system("cls");
             frame();
             gotoxy(5, 7); std::cout << "Ingrese su nombre y apellido: ";
-            cin.ignore();
-            getline(cin, nombre);
+            ingresarTexto("", nombre, esSoloLetras);
             gotoxy(5, 9); std::cout << "Ingrese su cedula: ";
-            cin >> cedula;
+            ingresarCedula("", cedula);
             if (esCedulaValida(cedula)) {
                 system("cls");
                 frame();
