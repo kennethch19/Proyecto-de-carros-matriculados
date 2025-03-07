@@ -367,7 +367,7 @@ void mostrarFuncionesAdmin() {
     gotoxy(5, 10); std::cout << "4. Eliminar vehiculo";
     gotoxy(5, 11); std::cout << "5. Eliminar todos los vehiculos";
     setColor(12); // Cambiar el color a rojo
-    gotoxy(5, 12); std::cout << "6. Salir";
+    gotoxy(5, 12); std::cout << "6. Regresar";
     setColor(7); 
 }
 
@@ -402,7 +402,7 @@ void mostrarFuncionesCliente() {
     gotoxy(5, 8); std::cout << "2. Actualizar vehiculo";
     gotoxy(5, 9); std::cout << "3. Ver mis vehiculos";
     setColor(12); // Cambiar el color a rojo
-    gotoxy(5, 10); std::cout << "4. Salir";
+    gotoxy(5, 10); std::cout << "4. Regresar";
     setColor(7); 
 }
 
