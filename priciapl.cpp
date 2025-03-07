@@ -5,6 +5,7 @@
 #include <conio.h> 
 #include <windows.h> 
 #include <iomanip>
+#include <locale.h> // Incluir biblioteca locale.h
 
 using namespace std;
 
@@ -37,7 +38,7 @@ void cargarRegistros() {
 }
 
 void guardarRegistros() {
-    ofstream archivo(FILE_PATH, ios::out | ios::trunc);
+    ofstream archivo(FILE_PATH, ios::out | ios::trunc); // Abrir en modo truncar para sobrescribir
     if (!archivo) {
         cerr << "Error al abrir el archivo para escritura.\n";
         return;
@@ -51,7 +52,7 @@ void guardarRegistros() {
 }
 
 void guardarDatos(const vector<Vehiculo> &vehiculos) {
-    ofstream archivo(FILE_PATH, ios::out | ios::trunc);
+    ofstream archivo(FILE_PATH, ios::out | ios::trunc); // Abrir en modo truncar para sobrescribir
     if (archivo.is_open()) {
         archivo << left << setw(15) << "Placa" << setw(20) << "Propietario" << setw(20) << "Modelo" << setw(15) << "Color" << setw(15) << "Cedula" << endl;
         archivo << "----------------------------------------------------------------------------------------" << endl;
@@ -177,18 +178,42 @@ void registrarVehiculo() {
     gotoxy(5, 5); std::cout << "Ingrese los datos del propietario:";
     gotoxy(5, 7); std::cout << "Cedula: ";
     ingresarCedula("", v.cedula);
-    gotoxy(5, 9); std::cout << "Nombre y Apellido: ";
-    ingresarTexto("", v.propietario, esSoloLetras);
+
+    // Verificar si la cédula ya existe
+    for (const auto& vehiculo : vehiculos) {
+        if (vehiculo.cedula == v.cedula) {
+            v.propietario = vehiculo.propietario;
+            gotoxy(5, 9); std::cout << "Nombre y Apellido: " << v.propietario;
+            break;
+        }
+    }
+
+    if (v.propietario.empty()) {
+        gotoxy(5, 9); std::cout << "Nombre y Apellido: ";
+        ingresarTexto("", v.propietario, esSoloLetras);
+    }
+
     gotoxy(5, 11); std::cout << "Ingrese los datos del vehiculo:";
     gotoxy(5, 13); std::cout << "Placa: ";
     ingresarPlaca("", v.placa);
+
+    // Verificar si la placa ya existe
+    for (const auto& vehiculo : vehiculos) {
+        if (vehiculo.placa == v.placa) {
+            v = vehiculo;
+            gotoxy(5, 15); std::cout << "Modelo: " << v.modelo;
+            gotoxy(5, 17); std::cout << "Color: " << v.color;
+            cout << "\nDatos del vehiculo cargados automaticamente.\n";
+            return; // No guardar el registro nuevamente
+        }
+    }
+
     gotoxy(5, 15); std::cout << "Modelo: ";
     ingresarTexto("", v.modelo, esSoloLetras);
     gotoxy(5, 17); std::cout << "Color: ";
     ingresarTexto("", v.color, esSoloLetras);
     vehiculos.push_back(v);
-    guardarRegistros();
-    guardarDatos(vehiculos);
+    guardarDatos(vehiculos); // Guardar todos los datos para evitar duplicados
     cout << "Registro guardado correctamente.\n";
 }
 
@@ -203,27 +228,38 @@ void registrarVehiculoCliente(const string& nombre, const string& cedula) {
     gotoxy(5, 9); std::cout << "Cedula: " << v.cedula;
     gotoxy(5, 11); std::cout << "Placa: ";
     ingresarPlaca("", v.placa);
+
+    // Verificar si la placa ya existe
+    for (const auto& vehiculo : vehiculos) {
+        if (vehiculo.placa == v.placa) {
+            v = vehiculo;
+            gotoxy(5, 13); std::cout << "Modelo: " << v.modelo;
+            gotoxy(5, 15); std::cout << "Color: " << v.color;
+            cout << "\nDatos del vehiculo cargados automaticamente.\n";
+            return; // No guardar el registro nuevamente
+        }
+    }
+
     gotoxy(5, 13); std::cout << "Modelo: ";
     ingresarTexto("", v.modelo, esSoloLetras);
     gotoxy(5, 15); std::cout << "Color: ";
     ingresarTexto("", v.color, esSoloLetras);
     vehiculos.push_back(v);
-    guardarRegistros();
-    guardarDatos(vehiculos); // Guardar datos en el archivo de texto
+    guardarDatos(vehiculos); // Guardar todos los datos para evitar duplicados
     cout << "Registro guardado correctamente.\n";
 }
 
 void actualizarVehiculo() {
     string placa;
     cout << "Ingrese la placa del vehiculo a actualizar: ";
-    cin >> placa;
+    ingresarPlaca("", placa);
     for (auto& v : vehiculos) {
         if (v.placa == placa) {
             cout << "Modelo actual: " << v.modelo << endl;
             cout << "Color actual: " << v.color << endl;
             ingresarCedula("Ingrese la nueva cedula del propietario: ", v.cedula);
             ingresarTexto("Ingrese el nuevo propietario: ", v.propietario, esSoloLetras);
-
+            ingresarTexto("Ingrese el nuevo modelo: ", v.modelo, esSoloLetras);
             ingresarTexto("Ingrese el nuevo color: ", v.color, esSoloLetras);
             guardarRegistros();
             guardarDatos(vehiculos); // Guardar datos en el archivo de texto
@@ -285,38 +321,38 @@ void setColor(int color) {
 void frame() {
     setColor(11); 
     gotoxy(0, 0); std::cout << "+";
-    gotoxy(0, 20); std::cout << "+";
-    gotoxy(60, 0); std::cout << "+";
-    gotoxy(60, 20); std::cout << "+";
-    for (int i = 1; i < 60; i++) {
+    gotoxy(0, 25); std::cout << "+";
+    gotoxy(70, 0); std::cout << "+";
+    gotoxy(70, 25); std::cout << "+";
+    for (int i = 1; i < 70; i++) {
         gotoxy(i, 0); std::cout << "-";
     }
-    for (int i = 1; i < 60; i++) {
+    for (int i = 1; i < 70; i++) {
         gotoxy(i, 3); std::cout << "-";
     }
     setColor(10); // Cambiar el color a verde
     gotoxy(2, 2); std::cout << "Registro de Vehiculos";
     setColor(11); 
-    for (int l = 1; l < 20; l++) {
-        gotoxy(60, l); std::cout << "|";
+    for (int l = 1; l < 25; l++) {
+        gotoxy(70, l); std::cout << "|";
     }
-    for (int j = 1; j < 60; j++) {
-        gotoxy(j, 20); std::cout << "-";
+    for (int j = 1; j < 70; j++) {
+        gotoxy(j, 25); std::cout << "-";
     }
-    for (int j = 1; j < 60; j++) {
-        gotoxy(j, 18); std::cout << "-";
+    for (int j = 1; j < 70; j++) {
+        gotoxy(j, 23); std::cout << "-";
     }
-    for (int k = 1; k < 20; k++) {
+    for (int k = 1; k < 25; k++) {
         gotoxy(0, k); std::cout << "|";
     }
-    gotoxy(2, 19); std::cout << "Dylan Layedra - Kenneth Chicaiza";
+    gotoxy(2, 24); std::cout << "Dylan Layedra - Kenneth Chicaiza";
     setColor(7); 
     time_t now = time(0);
     tm* time = localtime(&now);
     std::vector<std::string> mes = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
     int year = 1900 + time->tm_year;
-    gotoxy(48, 1); std::cout << time->tm_mday << "/" << mes[time->tm_mon] << "/" << year;
-    gotoxy(50, 2); std::cout << time->tm_hour << ":" << time->tm_min << ":" << time->tm_sec;
+    gotoxy(58, 1); std::cout << time->tm_mday << "/" << mes[time->tm_mon] << "/" << year;
+    gotoxy(60, 2); std::cout << time->tm_hour << ":" << time->tm_min << ":" << time->tm_sec;
     setColor(7); 
 }
 
@@ -470,7 +506,7 @@ void mostrarMenuCliente(const string& nombre, const string& cedula) {
 
 bool verificarContrasena() {
     string contrasena;
-    cout << "Ingrese la contraseña de administrador: ";
+    gotoxy(5, 7); std::cout << "Ingrese la contraseña: ";
     char c;
     while ((c = _getch()) != 13) { // 13 es el código ASCII para Enter
         if (c == 8 && !contrasena.empty()) { // Backspace
@@ -491,9 +527,13 @@ void seleccionarUsuario() {
     bool enterPressed = false;
     do {
         system("cls");
-        cout << "Seleccione el tipo de usuario:\n";
-        cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador\n";
-        cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente\n";
+        frame();
+        gotoxy(15, 1); std::cout << "Seleccione el tipo de usuario:";
+        setColor(5); // Morado para Administrador
+        gotoxy(5, 7); std::cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador";
+        setColor(13); // Rosado para Cliente
+        gotoxy(5, 8); std::cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente";
+        setColor(7); // Resetear color
         do {
             tecla = _getch();
             switch (tecla) {
@@ -507,30 +547,41 @@ void seleccionarUsuario() {
                     enterPressed = true;
                     break;
             }
-            system("cls");
-            cout << "Seleccione el tipo de usuario:\n";
-            cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador\n";
-            cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente\n";
+            gotoxy(5, 7); setColor(5); std::cout << (opcion == 1 ? "-> " : "   ") << "1. Administrador";
+            gotoxy(5, 8); setColor(13); std::cout << (opcion == 2 ? "-> " : "   ") << "2. Cliente";
+            setColor(7); // Resetear color
         } while (!enterPressed);
         enterPressed = false;
+        system("cls"); // Borrar la pantalla antes de mostrar el siguiente menú
+        frame(); // Mostrar el cuadro nuevamente
         if (opcion == 1) {
             if (verificarContrasena()) {
+                system("cls");
+                frame();
                 mostrarMenuAdmin();
             } else {
-                cout << "Contraseña incorrecta. Intente nuevamente.\n";
+                system("cls");
+                frame();
+                gotoxy(5, 10); std::cout << "Contraseña incorrecta. Intente nuevamente.";
                 system("pause");
             }
         } else if (opcion == 2) {
             string nombre, cedula;
-            cout << "Ingrese su nombre y apellido: ";
+            system("cls");
+            frame();
+            gotoxy(5, 7); std::cout << "Ingrese su nombre y apellido: ";
             cin.ignore();
             getline(cin, nombre);
-            cout << "Ingrese su cedula: ";
+            gotoxy(5, 9); std::cout << "Ingrese su cedula: ";
             cin >> cedula;
             if (esCedulaValida(cedula)) {
+                system("cls");
+                frame();
                 mostrarMenuCliente(nombre, cedula);
             } else {
-                cout << "Cedula invalida. Intente nuevamente.\n";
+                system("cls");
+                frame();
+                gotoxy(5, 10); std::cout << "Cedula invalida. Intente nuevamente.";
                 system("pause");
             }
         }
@@ -538,7 +589,9 @@ void seleccionarUsuario() {
 }
 
 int main() {
+    setlocale(LC_ALL, "es_ES.UTF-8");  // Configura la codificación en español
     cargarRegistros();
+    cout << "Registros cargados correctamente.\n";
     seleccionarUsuario();
     return 0;
 }
