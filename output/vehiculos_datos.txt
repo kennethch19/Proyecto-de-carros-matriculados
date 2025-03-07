@@ -1,4 +1,3 @@
 Placa          Propietario         Modelo              Color          Cedula         
 ----------------------------------------------------------------------------------------
-PBK3617         Dylan              ty                  ty             1726772575     
-QWE1234         Dylan              yu                  yu             1726772575     
+PBK3617         Dylan Layedra      ty                  ty             1726772575     

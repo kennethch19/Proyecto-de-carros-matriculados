@@ -587,8 +587,14 @@ void seleccionarUsuario() {
     } while (true);
 }
 
+void configurarConsola() {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    setlocale(LC_ALL, "es_ES.UTF-8");
+}
+
 int main() {
-    setlocale(LC_ALL, "es_ES.UTF-8");  // Configura la codificación en español
+    configurarConsola();
     cargarRegistros();
     cout << "Registros cargados correctamente.\n";
     seleccionarUsuario();
